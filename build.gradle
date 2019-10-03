@@ -50,16 +50,23 @@ android {
     }
 }
 
-task sourcesJar(type: Jar) {
+task generateMySources(type: Jar) {
     classifier = 'sources'
-    from android.sourceSets.main.java.sourceFiles
+    from android.sourceSets.main.java.srcDirs
 }
 
-task classesJar(type: Jar) {
-    from "$buildDir/intermediates/classes/release"
+task addMySourcesToAar(type: Jar) {
+    archiveName "opencv-android-source.aar"
+    destinationDir file("build")
+    from zipTree("build/outputs/aar/opencv-android.aar")
+    from fileTree("build").include("libs/opencv-android-sources.jar")
+}
+
+afterEvaluate { project ->
+    project.tasks.preBuild.dependsOn generateMySources
+    project.addMySourcesToAar.dependsOn build
 }
 
 artifacts {
-    archives classesJar
-    archives sourcesJar
+    archives addMySourcesToAar.archivePath
 }
